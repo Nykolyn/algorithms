@@ -19,28 +19,10 @@ class Heap {
   getLeftChild = (index) => 2 * index;
   getRightChild = (index) => 2 * index + 1;
 
-  // inserting element to the heap
-  insert(value) {}
+  // helper function to compare two elements
+  // helps us to use whole implementation for different types of input without need to modify the implementation
+  comparator(a, b) {}
 
-  // removing element from the heap and returning it
-  remove() {}
-
-  // sorting heap is same for min and max heaps,
-  // it will remove elements from the top, push them to the output array
-  // until array length is 1
-  // its overall complexity is O(n * log(n))
-  sort() {
-    const { heap } = this;
-    const sorted = [];
-    while (heap.length > 1) {
-      sorted.push(this.remove());
-    }
-
-    return sorted;
-  }
-}
-
-class MinHeap extends Heap {
   insert(num) {
     const { heap, getParent } = this;
     // adding element to the end of the array
@@ -49,9 +31,10 @@ class MinHeap extends Heap {
     if (heap.length < 2) return;
 
     // we need the index of the last node, to run through the heap and replace child with parent until
-    // element is in the right place (current element is smaller its parent) or we reached the root
+    // element is in the right place or we reached the root
     let index = heap.length - 1;
-    while (heap[index] < heap[getParent(index)]) {
+    while (this.comparator(heap[index], heap[getParent(index)])) {
+      if (index < 2) break;
       // use es6 syntax to swap values, we are swapping the current node with the parent
       [heap[index], heap[getParent(index)]] = [
         heap[getParent(index)],
@@ -69,19 +52,19 @@ class MinHeap extends Heap {
     // if heap is empty - return null
     if (heap.length < 1) return null;
 
-    // smallest element is of course always the first element (root node)
-    const smallest = heap[1];
+    // needed element is of course always the first element (root node)
+    const element = heap[1];
     // now we need to pop last node, and replace it with the first node
     heap[1] = heap[heap.length - 1];
     heap.splice(heap.length - 1);
 
-    // if heap length is 3(null included) and root node is smaller then child - we are replacing them
+    // if heap length is 3(null included) and root node needs to be swapped with the child - we are replacing them
     // omitting this condition will cause infinite loop
     // because script will try to replace right child with root, when right child is undefined
-    if (heap.length == 3 && heap[1] > heap[2]) {
+    if (heap.length == 3 && this.comparator(heap[2], heap[1])) {
       [heap[1], heap[2]] = [heap[2], heap[1]];
 
-      return smallest;
+      return element;
     }
 
     // start the magic
@@ -90,15 +73,20 @@ class MinHeap extends Heap {
     let leftChild = getLeftChild(index);
     let rightChild = getRightChild(index);
 
-    // while root node is bigger then one of the children we will run the loop
-    while (heap[index] > heap[leftChild] || heap[index] > heap[rightChild]) {
-      // if left child is smaller then right child, we will swap the parent with the left child formula
+    // while root abstract comparator cb doesn't meet required conditions we will run the loop
+    while (
+      this.comparator(heap[leftChild], heap[index]) ||
+      this.comparator(heap[rightChild], heap[index])
+    ) {
+      // compare left child with the right, we will swap the parent with the left child
+      // and increment index to place it in the left child position
       // and increment index to the left child
-      if (heap[leftChild] < heap[rightChild]) {
+      if (this.comparator(heap[leftChild], heap[rightChild])) {
         [heap[index], heap[leftChild]] = [heap[leftChild], heap[index]];
         index *= 2;
       } else {
-        // otherwise we swap right child with the parent and increment index to the right child formula
+        // otherwise we swap right child with the parent and increment index to the right child
+        // and increment index to place it in the right child position
         [heap[index], heap[rightChild]] = [heap[rightChild], heap[index]];
         index = index * 2 + 1;
       }
@@ -113,65 +101,34 @@ class MinHeap extends Heap {
         break;
     }
 
-    // we are done with the swapping, returning smallest element (initial root node)
-    return smallest;
+    // we are done with the swapping, returning element (initial root node)
+    return element;
   }
+
+  // sorting heap is same for min and max heaps,
+  // it will remove elements from the top, push them to the output array
+  // until array length is 1
+  // its overall complexity is O(n * log(n))
+  sort() {
+    const { heap } = this;
+    const sorted = [];
+    while (heap.length > 1) {
+      sorted.push(this.remove());
+    }
+
+    return sorted;
+  }
+}
+
+class MinHeap extends Heap {
+  comparator = (a, b) => {
+    return a > b;
+  };
 }
 
 // max heap implementation is very similar to min heap, only difference is that
 // max value is root node, with smaller or equal value children nodes,
-// so methods changed accordingly
+// only thing we need is to change the comparator cb
 class MaxHeap extends Heap {
-  insert(num) {
-    const { heap, getParent } = this;
-    heap.push(num);
-    if (heap.length < 2) return;
-
-    let index = heap.length - 1;
-    while (heap[index] > heap[getParent(index)]) {
-      if (index < 2) break;
-      [heap[index], heap[getParent(index)]] = [
-        heap[getParent(index)],
-        heap[index],
-      ];
-      index = getParent(index);
-    }
-  }
-
-  remove() {
-    const { heap, getLeftChild, getRightChild } = this;
-
-    if (heap.length < 1) return null;
-
-    const biggest = heap[1];
-    heap[1] = heap[heap.length - 1];
-    heap.splice(heap.length - 1);
-
-    if (heap.length == 3) {
-      if (heap[1] < heap[2]) {
-        [heap[1], heap[2]] = [heap[2], heap[1]];
-      }
-      return biggest;
-    }
-
-    let index = 1;
-    let leftChild = getLeftChild(index);
-    let rightChild = getRightChild(index);
-    while (heap[index] <= heap[leftChild] || heap[index] <= heap[rightChild]) {
-      if (heap[leftChild] > heap[rightChild]) {
-        [heap[index], heap[leftChild]] = [heap[leftChild], heap[index]];
-        index = 2 * index;
-      } else {
-        [heap[index], heap[rightChild]] = [heap[rightChild], heap[index]];
-        index = 2 * index + 1;
-      }
-      leftChild = 2 * index;
-      rightChild = 2 * index + 1;
-      if (heap[leftChild] == undefined || heap[rightChild] == undefined) {
-        break;
-      }
-    }
-
-    return biggest;
-  }
+  comparator = (a, b) => a > b;
 }
