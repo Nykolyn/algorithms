@@ -8,10 +8,11 @@
 
 // node structure
 class Node {
+  left = null;
+  right = null;
+
   constructor(data) {
     this.data = data;
-    this.left = null;
-    this.right = null;
   }
 }
 
@@ -28,6 +29,29 @@ class BTS {
       return;
     }
 
+    /** adding solution with infinite loop instead of recursion 
+ * 
+    let currentNode = this.root;
+    while (true) {
+      if (data < currentNode.data) {
+        if (!currentNode.left) {
+          currentNode.left = node;
+          return;
+        }
+
+        currentNode = currentNode.left;
+      }
+
+      if (data > currentNode.data) {
+        if (!currentNode.right) {
+          currentNode.right = node;
+          return;
+        }
+
+        currentNode = currentNode.right;
+      }
+    }
+*/
     // recursively go through the thee until we find the right place to add the node
     const searchNode = (refNode) => {
       // data is less then our reference node data
@@ -161,6 +185,40 @@ class BTS {
 
     return current?.data;
   }
+
+  // traversal of the binary tree
+  traversal(node = this.root) {
+    if (node === null) return [];
+    const result = [];
+
+    // current implementation called in order traversal
+    // meaning that we go [left, current, right]
+    // to change it to other order - change the order of the  -  result.push(node.data);
+    // result.push(node.data) first - pre order traversal
+    // result.push(node.data); second - post order traversal
+    if (node.left) result.push(...this.traversal(node.left));
+    result.push(node.data);
+    if (node.right) result.push(...this.traversal(node.right));
+    return result;
+  }
+
+  // breadth first search means that we are focusing on every item on the same level
+  // before moving to the next level
+  BFS() {
+    let current = this.root;
+    const result = [];
+    const queue = [];
+    queue.push(current);
+    while (queue.length) {
+      const node = queue.shift();
+
+      result.push(node.data);
+      if (node.left) queue.push(node.left);
+      if (node.right) queue.push(node.right);
+    }
+
+    return result;
+  }
 }
 
 const bts = new BTS();
@@ -174,3 +232,5 @@ bts.remove(555);
 console.log(bts);
 console.log(bts.find(12));
 console.log(bts.isPresent(12));
+console.log(bts.traversal());
+console.log(bts.BFS());
