@@ -12,20 +12,20 @@ class Graph {
 
   // adding node is simple, just add it to the nodes Map
   addNode(node) {
-    this.nodes.set(node, []);
+    this.nodes.set(node, {});
   }
 
   // our graph is undirected, so we need to add edge in both directions
-  addEdge(source, destination) {
+  addEdge(source, destination, weight = 1) {
     const { nodes } = this;
     if (!nodes.get(source) || !nodes.get(destination)) return;
 
-    if (!nodes.get(source).includes(destination)) {
-      nodes.get(source).push(destination);
+    if (!nodes.get(source)[destination]) {
+      nodes.get(source)[destination] = weight;
     }
 
-    if (!nodes.get(destination).includes(source)) {
-      nodes.get(destination).push(source);
+    if (!nodes.get(destination)[source]) {
+      nodes.get(destination)[source] = weight;
     }
   }
 
@@ -45,7 +45,7 @@ class Graph {
       visited[current] = true;
       const neighbors = this.getNeighbors(current);
 
-      neighbors.forEach((neighbor) => queue.push(neighbor));
+      Object.keys(neighbors).forEach((neighbor) => queue.push(neighbor));
     }
 
     return false;
@@ -63,7 +63,7 @@ class Graph {
     visited[source] = true;
     const neighbors = this.getNeighbors(source);
 
-    return neighbors.reduce((acc, neighbor) => {
+    return Object.keys(neighbors).reduce((acc, neighbor) => {
       if (acc) return acc;
       return this.dfs(neighbor, destination, visited) ? true : false;
     }, false);
@@ -74,18 +74,18 @@ class Graph {
   }
 }
 
-const graph = new Graph();
-
 // test
+// const graph = new Graph();
 // graph.addNode("Tim");
 // graph.addNode("Jim");
 // graph.addNode("John");
 // graph.addNode("Tom");
 // graph.addNode("Elsa");
 // graph.addNode("Anna");
-// graph.addEdge("Tim", "Tom");
-// graph.addEdge("Elsa", "Anna");
-// graph.addEdge("Tom", "Elsa");
+// graph.addEdge("Tim", "Tom", 4);
+// graph.addEdge("Elsa", "Anna", 2);
+// graph.addEdge("Tom", "Elsa", 5);
 // console.log(graph);
 // console.log(graph.bfs("Tim", "Anna"));
 // console.log(graph.dfs("Tom", "Elsa"));
+module.exports = Graph;
